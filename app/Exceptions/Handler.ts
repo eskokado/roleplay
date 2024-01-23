@@ -1,3 +1,8 @@
+import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Logger from '@ioc:Adonis/Core/Logger'
+import HttpExceptionHandler from '@ioc:Adonis/Core/HttpExceptionHandler'
+import { Exception } from '@adonisjs/core/build/standalone'
+
 /*
 |--------------------------------------------------------------------------
 | Http Exception Handler
@@ -13,11 +18,20 @@
 |
 */
 
-import Logger from '@ioc:Adonis/Core/Logger'
-import HttpExceptionHandler from '@ioc:Adonis/Core/HttpExceptionHandler'
-
 export default class ExceptionHandler extends HttpExceptionHandler {
   constructor() {
     super(Logger)
+  }
+
+  public async handle(error: Exception, ctx: HttpContextContract) {
+    console.log({ error: JSON.stringify(error) })
+    if (error.status === 422)
+      return await ctx.response.status(error.status).send({
+        code: 'BAD_REQUEST',
+        status: error.status,
+        message: error.message,
+        errors: error['messages']?.errors ? error['messages'].errors : '',
+      })
+    return super.handle(error, ctx)
   }
 }
