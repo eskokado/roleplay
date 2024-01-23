@@ -46,11 +46,11 @@ test.group('User', (group) => {
       .expect(409)
 
     assert.exists(body.message)
-    // assert.exists(body.code)
-    // assert.exists(body.status)
+    assert.exists(body.code)
+    assert.exists(body.status)
     assert.include(body.message, 'email')
-    // assert.equal(body.code, 'BAD_REQUEST')
-    // assert.equal(body.status, 409)
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 409)
   })
 
   group.beforeEach(async () => {
