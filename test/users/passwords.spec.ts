@@ -48,7 +48,6 @@ test.group('Password', (group) => {
       .expect(204)
 
     const tokens = user.related('tokens').query()
-    console.log(tokens[0])
     assert.isNotEmpty(tokens)
   }).timeout(0)
 
@@ -76,6 +75,24 @@ test.group('Password', (group) => {
     const { body } = await supertest(BASE_URL).post('/reset-password').send({}).expect(422)
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
+  })
+
+  test('it should return 404 when using the same token twice', async (assert) => {
+    const user = await UserFactory.create()
+    const { token } = await user.related('tokens').create({ token: 'token' })
+
+    await supertest(BASE_URL)
+      .post('/reset-password')
+      .send({ token, password: '123456' })
+      .expect(204)
+
+    const { body } = await supertest(BASE_URL)
+      .post('/reset-password')
+      .send({ token, password: '123456' })
+      .expect(404)
+
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 404)
   })
 
   group.beforeEach(async () => {
