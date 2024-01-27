@@ -1,3 +1,4 @@
+import Hash from '@ioc:Adonis/Core/Hash'
 import Mail from '@ioc:Adonis/Addons/Mail'
 import Database from '@ioc:Adonis/Lucid/Database'
 import { UserFactory } from 'Database/factories'
@@ -56,6 +57,20 @@ test.group('Password', (group) => {
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   }).timeout(0)
+
+  test('it should be able to reset password', async (assert) => {
+    const user = await UserFactory.create()
+    const { token } = await user.related('tokens').create({ token: 'token' })
+
+    await supertest(BASE_URL)
+      .post('/reset-password')
+      .send({ token, password: '123456' })
+      .expect(204)
+
+    await user.refresh()
+    const checkPassword = await Hash.verify(user.password, '123456')
+    assert.isTrue(checkPassword)
+  })
 
   group.beforeEach(async () => {
     await Database.beginGlobalTransaction()
