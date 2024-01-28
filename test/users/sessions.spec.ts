@@ -67,6 +67,25 @@ test.group('Session', (group) => {
       .expect(200)
   })
 
+  test('it should revoke token when user signs out', async (assert) => {
+    const plainPassword = 'test'
+    const { email } = await UserFactory.merge({ password: plainPassword }).create()
+    const { body } = await supertest(BASE_URL)
+      .post('/sessions')
+      .send({ email, password: plainPassword })
+      .expect(201)
+
+    const apiToken = body.token
+    await supertest(BASE_URL)
+      .delete('/sessions')
+      .set('Authorization', `Bearer ${apiToken.token}`)
+      .expect(200)
+
+    const token = await Database.query().select('*').from('api_tokens').where('token', apiToken)
+
+    assert.isEmpty(token)
+  })
+
   group.beforeEach(async () => {
     await Database.beginGlobalTransaction()
   })
