@@ -52,6 +52,21 @@ test.group('Session', (group) => {
     assert.equal(body.message, 'invalid credentials')
   })
 
+  test('it should return 200 when user signs out', async (assert) => {
+    const plainPassword = 'test'
+    const { email } = await UserFactory.merge({ password: plainPassword }).create()
+    const { body } = await supertest(BASE_URL)
+      .post('/sessions')
+      .send({ email, password: plainPassword })
+      .expect(201)
+
+    const apiToken = body.token
+    await supertest(BASE_URL)
+      .delete('/sessions')
+      .set('Authorization', `Bearer ${apiToken.token}`)
+      .expect(200)
+  })
+
   group.beforeEach(async () => {
     await Database.beginGlobalTransaction()
   })
