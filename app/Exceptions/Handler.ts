@@ -24,7 +24,6 @@ export default class ExceptionHandler extends HttpExceptionHandler {
   }
 
   public async handle(error: Exception, ctx: HttpContextContract) {
-    console.log({ error: JSON.stringify(error) })
     if (error.status === 422)
       return await ctx.response.status(error.status).send({
         code: 'BAD_REQUEST',
@@ -38,6 +37,13 @@ export default class ExceptionHandler extends HttpExceptionHandler {
         status: 404,
         message: 'resource not found',
       })
+    else if (['E_INVALID_AUTH_UID', 'E_INVALID_AUTH_PASSWORD'].includes(error.code || ''))
+      return await ctx.response.status(error.status).send({
+        code: 'BAD_REQUEST',
+        status: 400,
+        message: 'invalid credentials',
+      })
+
     return super.handle(error, ctx)
   }
 }
