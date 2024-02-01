@@ -8,8 +8,13 @@ export default class GroupRequestsController {
     const { master } = request.qs()
 
     const groupRequests = await GroupRequest.query()
-      .preload('group')
-      .preload('user')
+      .select('id', 'groupId', 'userId', 'status')
+      .preload('group', (query) => {
+        query.select('name', 'master')
+      })
+      .preload('user', (query) => {
+        query.select('username')
+      })
       .whereHas('group', (query) => {
         query.where('master', Number(master))
       })
