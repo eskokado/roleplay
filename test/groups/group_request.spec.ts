@@ -111,6 +111,16 @@ test.group('Group', (group) => {
     assert.equal(body.groupRequests.length, 0)
   })
 
+  test('it should return 422 when master is not provided', async (assert) => {
+    const master = await UserFactory.create()
+    const group = await GroupFactory.merge({ master: master.id }).create()
+
+    const { body } = await supertest(BASE_URL).get(`/groups/${group.id}/requests`).expect(422)
+
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 422)
+  })
+
   group.before(async () => {
     const plainPassword = 'test'
     const newUser = await UserFactory.merge({ password: plainPassword }).create()
