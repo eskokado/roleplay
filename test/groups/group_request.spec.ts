@@ -94,6 +94,23 @@ test.group('Group', (group) => {
     assert.equal(body.groupRequests[0].group.master, master.id)
   })
 
+  test('it should return an empty list then master has no group requests', async (assert) => {
+    const master = await UserFactory.create()
+    const group = await GroupFactory.merge({ master: master.id }).create()
+
+    await supertest(BASE_URL)
+      .post(`/groups/${group.id}/requests`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+
+    const { body } = await supertest(BASE_URL)
+      .get(`/groups/${group.id}/requests?master=${user.id}`)
+
+      .expect(200)
+    assert.exists(body.groupRequests, 'GroupRequests undefined')
+    assert.equal(body.groupRequests.length, 0)
+  })
+
   group.before(async () => {
     const plainPassword = 'test'
     const newUser = await UserFactory.merge({ password: plainPassword }).create()
