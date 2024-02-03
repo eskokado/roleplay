@@ -121,6 +121,26 @@ test.group('Group', (group) => {
     assert.equal(body.status, 422)
   })
 
+  test('it should accept a group request', async (assert) => {
+    const master = await UserFactory.create()
+    const group = await GroupFactory.merge({ master: master.id }).create()
+
+    const { body } = await supertest(BASE_URL)
+      .post(`/groups/${group.id}/requests`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+
+    const response = await supertest(BASE_URL)
+      .post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`)
+      .send({})
+      .expect(200)
+
+    assert.exists(response.body.groupRequest, 'Group undefined')
+    assert.equal(response.body.groupRequest.userId, user.id)
+    assert.equal(response.body.groupRequest.groupId, group.id)
+    assert.equal(response.body.groupRequest.status, 'ACCEPTED')
+  })
+
   group.before(async () => {
     const plainPassword = 'test'
     const newUser = await UserFactory.merge({ password: plainPassword }).create()
