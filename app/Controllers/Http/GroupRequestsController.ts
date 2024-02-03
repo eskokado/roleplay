@@ -58,6 +58,8 @@ export default class GroupRequestsController {
       .firstOrFail()
 
     const updateGroupRequest = await groupRequest?.merge({ status: 'ACCEPTED' }).save()
+    await groupRequest.load('group')
+    await groupRequest.group.related('players').attach([groupRequest.userId])
 
     return response.ok({ groupRequest: updateGroupRequest })
   }
