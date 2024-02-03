@@ -139,6 +139,11 @@ test.group('Group', (group) => {
     assert.equal(response.body.groupRequest.userId, user.id)
     assert.equal(response.body.groupRequest.groupId, group.id)
     assert.equal(response.body.groupRequest.status, 'ACCEPTED')
+
+    await group.load('players')
+    assert.isNotEmpty(group.players)
+    assert.equal(group.players.length, 1)
+    assert.equal(group.players[0].id, user.id)
   })
 
   group.before(async () => {
