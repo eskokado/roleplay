@@ -127,8 +127,7 @@ test.group('Group', (group) => {
   })
 
   test('it should accept a group request', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     const { body } = await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests`)
@@ -153,8 +152,7 @@ test.group('Group', (group) => {
   })
 
   test('it should return 404 when providing an unexisting group request', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests`)
@@ -172,8 +170,7 @@ test.group('Group', (group) => {
   })
 
   test('it should reject a group request', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     const { body } = await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests`)
@@ -190,8 +187,7 @@ test.group('Group', (group) => {
   })
 
   test('it should return 404 when providign an unexisting group for rejection', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     const response = await supertest(BASE_URL)
       .delete(`/groups/${group.id}/requests/1234`)
@@ -203,8 +199,7 @@ test.group('Group', (group) => {
   })
 
   test('it should return 404 when providign an unexisting group request for rejection', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     const { body } = await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests`)
