@@ -82,6 +82,7 @@ test.group('Group', (group) => {
 
     const { body } = await supertest(BASE_URL)
       .get(`/groups/${group.id}/requests?master=${master.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
     assert.exists(body.groupRequests, 'GroupRequests undefined')
@@ -106,7 +107,7 @@ test.group('Group', (group) => {
 
     const { body } = await supertest(BASE_URL)
       .get(`/groups/${group.id}/requests?master=${user.id}`)
-
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
     assert.exists(body.groupRequests, 'GroupRequests undefined')
     assert.equal(body.groupRequests.length, 0)
@@ -116,7 +117,10 @@ test.group('Group', (group) => {
     const master = await UserFactory.create()
     const group = await GroupFactory.merge({ master: master.id }).create()
 
-    const { body } = await supertest(BASE_URL).get(`/groups/${group.id}/requests`).expect(422)
+    const { body } = await supertest(BASE_URL)
+      .get(`/groups/${group.id}/requests`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(422)
 
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
@@ -133,6 +137,7 @@ test.group('Group', (group) => {
 
     const response = await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`)
+      .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(200)
 
@@ -158,6 +163,7 @@ test.group('Group', (group) => {
 
     const response = await supertest(BASE_URL)
       .post(`/groups/${group.id}/requests/1234/accept`)
+      .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(404)
 
@@ -176,6 +182,7 @@ test.group('Group', (group) => {
 
     await supertest(BASE_URL)
       .delete(`/groups/${group.id}/requests/${body.groupRequest.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
     const groupRequest = await GroupRequest.find(body.groupRequest.id)
@@ -188,6 +195,7 @@ test.group('Group', (group) => {
 
     const response = await supertest(BASE_URL)
       .delete(`/groups/${group.id}/requests/1234`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(404)
 
     assert.equal(response.body.code, 'BAD_REQUEST')
@@ -205,6 +213,7 @@ test.group('Group', (group) => {
 
     const response = await supertest(BASE_URL)
       .delete(`/groups/1234/requests/${body.groupRequest.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(404)
 
     assert.equal(response.body.code, 'BAD_REQUEST')
