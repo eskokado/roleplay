@@ -51,8 +51,7 @@ test.group('Group', (group) => {
   })
 
   test('it should update a group', async (assert) => {
-    const master = await UserFactory.create()
-    const group = await GroupFactory.merge({ master: master.id }).create()
+    const group = await GroupFactory.merge({ master: user.id }).create()
 
     const groupPayload = {
       name: 'test',
@@ -65,6 +64,7 @@ test.group('Group', (group) => {
 
     const { body } = await supertest(BASE_URL)
       .patch(`/groups/${group.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send(groupPayload)
       .expect(200)
 
@@ -79,7 +79,11 @@ test.group('Group', (group) => {
   })
 
   test('it should return 404 when providing an unexisting group for update', async (assert) => {
-    const { body } = await supertest(BASE_URL).patch(`/groups/1234`).send({}).expect(404)
+    const { body } = await supertest(BASE_URL)
+      .patch(`/groups/1234`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(404)
 
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 404)
@@ -106,7 +110,10 @@ test.group('Group', (group) => {
       .send({})
       .expect(200)
 
-    await supertest(BASE_URL).delete(`/groups/${group.id}/players/${newUser.id}`).expect(200)
+    await supertest(BASE_URL)
+      .delete(`/groups/${group.id}/players/${newUser.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
 
     await group.load('players')
     assert.isEmpty(group.players)
@@ -129,7 +136,10 @@ test.group('Group', (group) => {
 
     const group = body.group
 
-    await supertest(BASE_URL).delete(`/groups/${group.id}/players/${user.id}`).expect(400)
+    await supertest(BASE_URL)
+      .delete(`/groups/${group.id}/players/${user.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
 
     const groupModel = await Group.findOrFail(group.id)
     await groupModel.load('players')
@@ -151,7 +161,10 @@ test.group('Group', (group) => {
       .set('Authorization', `Bearer ${token}`)
       .send(groupPayload)
 
-    await supertest(BASE_URL).delete(`/groups/${body.group.id}`).expect(200)
+    await supertest(BASE_URL)
+      .delete(`/groups/${body.group.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
 
     const emptyGroup = await Database.query().from('groups').where('id', body.group.id)
     assert.isEmpty(emptyGroup)
@@ -161,7 +174,10 @@ test.group('Group', (group) => {
   })
 
   test('it should return 404 when providing an unexisting group for deletion', async (assert) => {
-    const { body } = await supertest(BASE_URL).delete(`/groups/1234}`).expect(404)
+    const { body } = await supertest(BASE_URL)
+      .delete(`/groups/1234}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404)
 
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 404)
