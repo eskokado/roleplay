@@ -43,7 +43,7 @@ export default class GroupsController {
 
     await group.delete()
 
-    await group.related('players').detach()
+    // await group.related('players').detach() // or add migration CASCADE
 
     return response.ok({})
   }
