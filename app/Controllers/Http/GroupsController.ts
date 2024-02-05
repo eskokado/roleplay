@@ -14,10 +14,13 @@ export default class GroupsController {
     return response.created({ group })
   }
 
-  public async update({ request, response }: HttpContextContract) {
+  public async update({ request, response, bouncer }: HttpContextContract) {
     const id = request.param('id')
     const payload = request.all()
     const group = await Group.findOrFail(id)
+
+    await bouncer.authorize('updateGroup', group)
+
     const updatedGroup = await group.merge(payload).save()
 
     return response.ok({ group: updatedGroup })
@@ -37,9 +40,11 @@ export default class GroupsController {
     })
   }
 
-  public async destroy({ request, response }: HttpContextContract) {
+  public async destroy({ request, response, bouncer }: HttpContextContract) {
     const id = request.param('id')
     const group = await Group.findOrFail(id)
+
+    await bouncer.authorize('deleteGroup', group)
 
     await group.delete()
 
