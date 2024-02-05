@@ -1,6 +1,6 @@
 import Database from '@ioc:Adonis/Lucid/Database'
 import User from 'App/Models/User'
-import { UserFactory } from 'Database/factories'
+import { GroupFactory, UserFactory } from 'Database/factories'
 import test from 'japa'
 import supertest from 'supertest'
 
@@ -45,9 +45,36 @@ test.group('Group', (group) => {
       .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(422)
-    console.log(body)
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
+  })
+
+  test('it should update a group', async (assert) => {
+    const master = await UserFactory.create()
+    const group = await GroupFactory.merge({ master: master.id }).create()
+
+    const groupPayload = {
+      name: 'test',
+      description: 'test',
+      schedule: 'test',
+      location: 'test',
+      chronic: 'test',
+      master: user.id,
+    }
+
+    const { body } = await supertest(BASE_URL)
+      .patch(`/groups/${group.id}`)
+      .send(groupPayload)
+      .expect(200)
+
+    assert.exists(body.group, 'Group undefined')
+    assert.equal(body.group.id, group.id)
+    assert.equal(body.group.name, groupPayload.name)
+    assert.equal(body.group.description, groupPayload.description)
+    assert.equal(body.group.schedule, groupPayload.schedule)
+    assert.equal(body.group.location, groupPayload.location)
+    assert.equal(body.group.chronic, groupPayload.chronic)
+    assert.equal(body.group.master, user.id)
   })
 
   group.before(async () => {
