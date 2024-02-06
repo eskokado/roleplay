@@ -7,8 +7,15 @@ export default class GroupsController {
   public async index({ request, response }: HttpContextContract) {
     const { text, ['user']: userId } = request.qs()
     let groups = [] as any
-    if (!userId) groups = await Group.query().preload('players').preload('masterUser')
-    else {
+    if (!userId) {
+      if (!text) groups = await Group.query().preload('players').preload('masterUser')
+      else
+        groups = await Group.query()
+          .preload('players')
+          .preload('masterUser')
+          .where('name', 'LIKE', `%${text}%`)
+          .orWhere('description', 'LIKE', `%${text}%`)
+    } else {
       if (!text)
         groups = await Group.query()
           .preload('players')
