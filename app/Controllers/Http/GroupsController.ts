@@ -4,12 +4,6 @@ import Group from 'App/Models/Group'
 import CreateGroupValidator from 'App/Validators/CreateGroupValidator'
 
 export default class GroupsController {
-  public async index({ request, response }: HttpContextContract) {
-    const { text, ['user']: userId } = request.qs()
-    const groups = await this.filterByQueryString(userId, text)
-    return response.ok({ groups })
-  }
-
   private all() {
     return Group.query().preload('players').preload('masterUser')
   }
@@ -18,28 +12,22 @@ export default class GroupsController {
     return Group.query()
       .preload('players')
       .preload('masterUser')
-      .whereHas('players', (query) => {
-        query.where('id', userId)
-      })
+      .withScopes((scope) => scope.withPlayers(userId))
   }
 
   private filterByText(text: string) {
     return Group.query()
       .preload('players')
       .preload('masterUser')
-      .where('name', 'LIKE', `%${text}%`)
-      .orWhere('description', 'LIKE', `%${text}%`)
+      .withScopes((scope) => scope.withText(text))
   }
 
   private filterByUserAndText(userId: number, text: string) {
     return Group.query()
       .preload('players')
       .preload('masterUser')
-      .whereHas('players', (query) => {
-        query.where('id', userId)
-      })
-      .where('name', 'LIKE', `%${text}%`)
-      .orWhere('description', 'LIKE', `%${text}%`)
+      .withScopes((scope) => scope.withPlayers(userId))
+      .withScopes((scope) => scope.withText(text))
   }
 
   private filterByQueryString(userId: number, text: string) {
@@ -47,6 +35,12 @@ export default class GroupsController {
     else if (userId) return this.filterByUser(userId)
     else if (text) return this.filterByText(text)
     else return this.all()
+  }
+
+  public async index({ request, response }: HttpContextContract) {
+    const { text, ['user']: userId } = request.qs()
+    const groups = await this.filterByQueryString(userId, text)
+    return response.ok({ groups })
   }
 
   public async store({ request, response }: HttpContextContract) {
