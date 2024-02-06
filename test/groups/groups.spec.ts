@@ -220,6 +220,30 @@ test.group('Group', (group) => {
     assert.equal(body.groups[0].players[0].username, user.username)
   })
 
+  test('it should return no groups by user id', async (assert) => {
+    const groupPayload = {
+      name: 'test',
+      description: 'test',
+      schedule: 'test',
+      location: 'test',
+      chronic: 'test',
+      master: user.id,
+    }
+
+    await supertest(BASE_URL)
+      .post('/groups')
+      .set('Authorization', `Bearer ${token}`)
+      .send(groupPayload)
+
+    const { body } = await supertest(BASE_URL)
+      .get('/groups?user=123')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    assert.exists(body.groups, 'Groups undefined')
+    assert.equal(body.groups.length, 0)
+  })
+
   group.before(async () => {
     const plainPassword = 'test'
     const newUser = await UserFactory.merge({ password: plainPassword }).create()
